@@ -24,7 +24,8 @@
 |---|---|---|
 | 解决方案 | `D:\code\VideoPlay\VideoPlay.slnx` | 平台 x64 / x86 |
 | 源码 | `D:\code\VideoPlay\VideoPlay\VideoPlay.cpp` | 当前 Hello World 占位 |
-| **成品目录 OutDir（Debug\|x64）** | `D:\code\VideoPlay\x64\Debug\` | VideoPlay.exe + libvlc.dll + libvlccore.dll + plugins\（运行时依赖） |
+| **成品目录 OutDir（Debug\|Win32，当前路线）** | `D:\code\VideoPlay\Debug\` | VideoPlay.exe + libvlc.dll + libvlccore.dll + plugins\（运行时依赖；32 位库与 Win32 匹配） |
+| 成品目录 OutDir（Debug\|x64，暂不用） | `D:\code\VideoPlay\x64\Debug\` | 走 x64 路线时的成品目录（需换 64 位 SDK） |
 | 中间目录 IntDir（Debug\|x64） | `D:\code\VideoPlay\VideoPlay\x64\Debug\` | .obj/.pdb/.tlog/.ilk，可删，重编自动再生 |
 | libvlc 头文件 | `D:\code\VideoPlay\VideoPlay\include\vlc\` | |
 | libvlc 导入库 | `D:\code\VideoPlay\VideoPlay\lib\libvlc.lib`、`libvlccore.lib` | 链接用（Debug\|x64 已在 vcxproj 配好） |
@@ -44,8 +45,8 @@
 
 ## 构建
 
-- 用 VS 打开 `VideoPlay.slnx`，配置选 **Debug | x64**（当前活动平台）。
-- 链接依赖已配好：`AdditionalDependencies = libvlc.lib;libvlccore.lib`，`AdditionalLibraryDirectories = lib`，`AdditionalIncludeDirectories = .;include;include\vlc;`（仅 Debug|x64 配了，Win32 配置缺 include/lib 设置，切 x86 需先补）。
+- 用 VS 打开 `VideoPlay.slnx`，配置选 **Debug | Win32**（当前活动平台；用户选定走 X86 路线，用老师的 32 位 SDK）。
+- 链接依赖已配好：`AdditionalDependencies = libvlc.lib;libvlccore.lib`，`AdditionalLibraryDirectories = lib`，`AdditionalIncludeDirectories = .;include;include\vlc;`（**四个组合全部配齐**：Debug/Release × Win32/x64，2026-10-06 补齐）。
 - ⚠️ 工程里**没有 PostBuildEvent**，`libvlc.dll / libvlccore.dll / plugins\` 是**手动拷贝**进成品目录的：清了输出目录、改了 OutDir 或切换平台后必须重拷，否则运行时报"找不到 libvlc.dll"。
 
 ## 工作流约束（沿用用户其他项目 AGENTS.md 的规矩）
@@ -64,10 +65,11 @@
 2. 本工程是 x64 平台：exe 在 `x64\Debug\`（OutDir），中间文件在 `VideoPlay\x64\Debug\`（IntDir）——两个 x64 分别是**输出目录**和**中间目录**，都是 VS 默认行为，不是配置差异。
 3. `lib` 下还有 `libvlc.la / libvlccore.la`：Linux libtool 生成的文本文件，Windows 链接用不到，可留可删。
 4. 参考工程 VideoPlay.cpp 功能骨架：`libvlc_new("--ignore-config")` → `libvlc_media_new_location("file:///...")` → `libvlc_media_player_new_from_media` → play → 轮询等 volume 就绪 → 读 volume/length/宽高 → `_kbhit()` 控制 暂停/续播/停止 → 收尾 release（player → media → instance）。
-5. 本工程 `VideoPlay.vcxproj` 的 Win32 配置没配 include/lib 路径，切 x86 前需补；Debug|x64 已配好。
+5. 本工程 `VideoPlay.vcxproj` 四个配置组合（Debug/Release × Win32/x64）的 include/lib 三段已全部配齐（2026-10-06）；`lib` 下 `libvlc.lib/libvlccore.lib` 经 COFF machine 验证为 **32 位（x86）**，只能配 Win32 平台——x64 配置链接它必报 LNK1112（当前 Hello World 未引用 libvlc 符号、链接器惰性加载未触发，属"能编译的假象"）。
 
 ## 变更日志
 
 - 2026-10-06：创建本 AGENTS.md；记录成品目录 `D:\code\VideoPlay\x64\Debug\`；查明 Debug vs x64\Debug 差异（平台不同 + VS 默认 OutDir/IntDir 规则，附官方 props 出处）。
 - 2026-10-06：`git init -b main` + 首次提交 `be8fdff`（401 文件，含 libvlc SDK 资产；构建产物已 .gitignore）。
 - 2026-10-06：推送 GitHub（jc875/VideoPlay），远端 main = 本地 fd516f0。
+- 2026-10-06：用户选定走 X86 路线（老师的 32 位 SDK）；补齐 vcxproj 全部 4 个配置组合的三段（附加包含目录/库目录/依赖项），msbuild 验证 Debug|Win32 编译通过（原 C1083 修复）；活动平台改为 Debug|Win32，成品目录为 `D:\code\VideoPlay\Debug\`。
