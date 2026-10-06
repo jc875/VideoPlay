@@ -51,7 +51,7 @@
 ## 工作流约束（沿用用户其他项目 AGENTS.md 的规矩）
 
 - **改代码前先 `git` 提交当前状态**，再改；改完说明变更点和理由。
-  - 已初始化：2026-10-06 `git init -b main`，首个提交 `be8fdff`（身份 jc875 / 34455602@qq.com）。本地暂无 remote，推 GitHub 需先建仓库再加 remote。
+  - 已初始化：2026-10-06 `git init -b main`，首个提交 `be8fdff`（身份 jc875 / 34455602@qq.com）。已推送 GitHub：remote `github` = https://github.com/jc875/VideoPlay.git，main 与远端同步。
 - **代码必须有注释**：关键逻辑写清理由、假设和不足。
 - **不撒谎、不美化**：有问题直接提，不编默认值，不静默降级，失败就说失败。
 - **向后兼容**：不破坏已有可运行状态；libvlc 调用先理清对象生命周期（instance/media/player 的 new 与 release 配对，参考工程收尾顺序：player → media → instance）。
@@ -70,3 +70,4 @@
 
 - 2026-10-06：创建本 AGENTS.md；记录成品目录 `D:\code\VideoPlay\x64\Debug\`；查明 Debug vs x64\Debug 差异（平台不同 + VS 默认 OutDir/IntDir 规则，附官方 props 出处）。
 - 2026-10-06：`git init -b main` + 首次提交 `be8fdff`（401 文件，含 libvlc SDK 资产；构建产物已 .gitignore）。
+- 2026-10-06：推送 GitHub（jc875/VideoPlay），远端 main = 本地 fd516f0。
