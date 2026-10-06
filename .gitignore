@@ -1,0 +1,42 @@
+# ===== Visual Studio 用户/临时文件 =====
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ===== 构建输出：输出目录(OutDir) + 中间目录(IntDir) =====
+# x64/ 同时匹配解决方案根 x64\ 和工程内 VideoPlay\x64\
+x64/
+Win32/
+[Dd]ebug/
+[Rr]elease/
+ipch/
+[Bb]in/
+[Oo]bj/
+
+# 编译中间产物
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.idb
+*.tlog
+*.log
+*.recipe
+*.lastbuildstate
+*.ipch
+*.sdf
+*.opensdf
+*.opendb
+*.VC.db
+*.VC.opendb
+*.aps
+*.ncb
+*.exp
+*.lib.bak
+*.exe.recipe
+
+# ===== 其他 =====
+Thumbs.db
+Desktop.ini
