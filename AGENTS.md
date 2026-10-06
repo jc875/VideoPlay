@@ -7,7 +7,7 @@
 ## 项目概述
 
 - 目标：学习并复刻参考工程 `音视频系统` 中的 VideoPlay（基于 libvlc 的控制台视频播放器）。
-- 现状：`VideoPlay.cpp` 还是 Hello World 占位；libvlc 头文件/库/dll/plugins 已就位（从参考工程拷贝，字节数与参考一致）。
+- 现状：`VideoPlay.cpp` 已是可运行的 libvlc 控制台播放器（2026-10-06 完成：播放股市讨论.mp4、打印音量/时长/分辨率/进度、键盘控制 暂停/续播/停止，运行验证 VLC 窗口出现）；libvlc 头文件/库/dll/plugins 已就位（从参考工程拷贝，字节数与参考一致）。
 - 技术栈：C++20、libvlc（VLC SDK）、VS2022+（PlatformToolset v145）、`.slnx` 解决方案格式（平台 x64 / x86）。
 
 ## 参考工程（只读，别改）
@@ -23,7 +23,7 @@
 | 项 | 路径 | 说明 |
 |---|---|---|
 | 解决方案 | `D:\code\VideoPlay\VideoPlay.slnx` | 平台 x64 / x86 |
-| 源码 | `D:\code\VideoPlay\VideoPlay\VideoPlay.cpp` | 当前 Hello World 占位 |
+| 源码 | `D:\code\VideoPlay\VideoPlay\VideoPlay.cpp` | libvlc 播放器（2026-10-06 已可运行） |
 | **成品目录 OutDir（Debug\|Win32，当前路线）** | `D:\code\VideoPlay\Debug\` | VideoPlay.exe + libvlc.dll + libvlccore.dll + plugins\（运行时依赖；32 位库与 Win32 匹配） |
 | 成品目录 OutDir（Debug\|x64，暂不用） | `D:\code\VideoPlay\x64\Debug\` | 走 x64 路线时的成品目录（需换 64 位 SDK） |
 | 中间目录 IntDir（Debug\|x64） | `D:\code\VideoPlay\VideoPlay\x64\Debug\` | .obj/.pdb/.tlog/.ilk，可删，重编自动再生 |
@@ -73,3 +73,5 @@
 - 2026-10-06：`git init -b main` + 首次提交 `be8fdff`（401 文件，含 libvlc SDK 资产；构建产物已 .gitignore）。
 - 2026-10-06：推送 GitHub（jc875/VideoPlay），远端 main = 本地 fd516f0。
 - 2026-10-06：用户选定走 X86 路线（老师的 32 位 SDK）；补齐 vcxproj 全部 4 个配置组合的三段（附加包含目录/库目录/依赖项），msbuild 验证 Debug|Win32 编译通过（原 C1083 修复）；活动平台改为 Debug|Win32，成品目录为 `D:\code\VideoPlay\Debug\`。
+- 2026-10-06：VideoPlay.cpp 改为 libvlc 播放器：路径不再写死 `E:\`，改用 `GetCurrentDirectoryW` + 文件名拼绝对路径（正斜杠 + file:/// 前缀），`Unicode2Utf8` 改为 `cchWideChar=-1` 标准写法；msbuild Debug|Win32 编译通过，运行验证 VLC 视频窗口出现（股市讨论.mp4 正常播放）；dll/plugins 已拷入 `D:\code\VideoPlay\Debug\` 和 `VideoPlay\Debug\` 两处。注意：命令行直接编 vcxproj 时 SolutionDir=项目目录，exe 落在 `VideoPlay\Debug\`；VS 编 .slnx 才落在 `D:\code\VideoPlay\Debug\`。提交 d25f9a5。
+- 2026-10-06：桌面复习笔记新增分类 `02_音视频基础\`，第 1 课《VLC 与 libvlc API 入门》总结 VLC 跨平台/插件/三对象生命周期/函数清单/GetCurrentDirectory 坑。
