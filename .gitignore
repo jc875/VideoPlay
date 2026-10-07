@@ -40,3 +40,6 @@ ipch/
 # ===== 其他 =====
 Thumbs.db
 Desktop.ini
+
+# 本地备份(编辑前快照,不进仓库)
+*.bak
