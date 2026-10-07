@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="VideoPlay/VideoPlay.vcxproj" />
+  <Project Path="VideoPlay/VideoPlay.vcxproj" Id="58c91d97-11c4-4a57-a7c1-23dc2db8f566" />
 </Solution>
