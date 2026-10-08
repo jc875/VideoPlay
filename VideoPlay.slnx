@@ -4,4 +4,5 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="VideoPlay/VideoPlay.vcxproj" Id="58c91d97-11c4-4a57-a7c1-23dc2db8f566" />
+  <Project Path="VideoClient/VideoClient.vcxproj" Id="5C7E4A22-8E2B-4A3C-9F3D-1B7C6A5E4D3F" />
 </Solution>
