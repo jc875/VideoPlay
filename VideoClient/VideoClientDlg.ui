@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<UI version="4.0">
+ <!--
+   视频客户端主窗口画布(空)。
+   用 VS 里的 Qt 设计器打开本文件,在 centralwidget 上拖控件(按钮/进度条/输入框/QLabel 等)。
+   拖完保存,uic 会自动生成 ui_VideoClientDlg.h,VideoClientDlg 里就能用 ui.xxx 访问。
+ -->
+ <class>VideoClientDlgClass</class>
+ <widget class="QMainWindow" name="VideoClientDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>视频客户端</string>
+  </property>
+  <widget class="QWidget" name="centralwidget"/>
+ </widget>
+ <layoutDefault spacing="6" margin="11"/>
+ <pixmapfunction></pixmapfunction>
+ <connections/>
+</UI>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    VideoClient —— 基于 Qt Widgets + libvlc 的视频客户端(学习项目,由 MainAgent 初始化)。
+    说明:
+      * 走 32 位路线:Win32 平台 + D:\Qt\5.15.2\msvc2019(32 位 Qt,与现有 32 位 libvlc 匹配)。
+      * 由 Qt VS Tools(QtMsBuild)驱动 moc/uic/rcc,自动加 Qt 头文件路径和 Qt5 导入库。
+      * Keyword 必须用 QtVS_v301(Qt VS Tools 3.x 格式),Qt4VSv1.0 会导致 qtvars 不生成。
+      * /utf-8:避免中文注释在代码页936下乱码(C4819)。
+  -->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5C7E4A22-8E2B-4A3C-9F3D-1B7C6A5E4D3F}</ProjectGuid>
+    <Keyword>QtVS_v301</Keyword>
+    <!-- Qt VS Tools 的构建目标目录:指向已安装扩展的 QtMSBuild -->
+    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">C:\Users\金\AppData\Local\Microsoft\VisualStudio\18.0_8605f5fa\Extensions\ahz4r02e.zgi\QtMSBuild</QtMsBuild>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <!-- v145 = 本机 VS2026(18.x) 的当前工具集;Qt 5.15.2 是 v142 编译的,MSVC ABI 向后兼容,v145 可链接 -->
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt_defaults.props')">
+    <Import Project="$(QtMsBuild)\qt_defaults.props" />
+  </ImportGroup>
+  <!-- Qt 版本链接配置:32 位 Qt 5.15.2 + 核心模块 -->
+  <PropertyGroup Label="QtSettings">
+    <QtInstall>D:\Qt\5.15.2\msvc2019</QtInstall>
+    <QtModules>core;gui;widgets</QtModules>
+  </PropertyGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <!-- /utf-8:让 MSVC 按 UTF-8 读源文件,避免中文注释在代码页936下乱码(C4819) -->
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <!-- Qt 构建项:qrc 资源、ui 画布、moc 头、源文件 -->
+  <ItemGroup>
+    <QtRcc Include="VideoClient.qrc" />
+    <QtUic Include="VideoClientDlg.ui" />
+    <QtMoc Include="VideoClientDlg.h" />
+    <ClCompile Include="VideoClientDlg.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
+    <Import Project="$(QtMsBuild)\qt.targets" />
+  </ImportGroup>
+</Project>
