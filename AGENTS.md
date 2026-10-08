@@ -8,7 +8,22 @@
 
 - 目标：学习并复刻参考工程 `音视频系统` 中的 VideoPlay（基于 libvlc 的控制台视频播放器）。
 - 现状：`VideoPlay.cpp` 已是可运行的 libvlc 控制台播放器（2026-10-06 完成：播放股市讨论.mp4、打印音量/时长/分辨率/进度、键盘控制 暂停/续播/停止，运行验证 VLC 窗口出现）；libvlc 头文件/库/dll/plugins 已就位（从参考工程拷贝，字节数与参考一致）。
-- 技术栈：C++20、libvlc（VLC SDK）、VS2022+（PlatformToolset v145）、`.slnx` 解决方案格式（平台 x64 / x86）。
+- 技术栈：C++20、libvlc（VLC SDK）、**Qt 5.15.2（Qt Widgets，32 位）**、VS2026（18.x，PlatformToolset v145）、`.slnx` 解决方案格式（平台 x64 / x86）。
+
+## Qt 客户端（VideoClient）
+
+- 已搭好 **Qt Widgets + libvlc** 客户端工程 `D:\code\VideoPlay\VideoClient\`（2026-10-08 由 MainAgent 初始化，msbuild 编译通过 + 运行验证弹出"视频客户端"窗口）。
+- **环境**：
+  - Qt 5.15.2 **32 位** MSVC 套件：`D:\Qt\5.15.2\msvc2019`（与现有 32 位 libvlc 匹配；64 位是 `msvc2019_64`，暂不用）。
+  - Qt VS Tools 3.5.0（扩展）装在用户级 `C:\Users\金\AppData\Local\Microsoft\VisualStudio\18.0_8605f5fa\Extensions\ahz4r02e.zgi\`（含 QtMSBuild 构建目标）；运行时副本 `C:\Users\金\AppData\Local\QtMsBuild\`。
+  - ⚠️ 本机 VS 实为 **VS2026（18.x）**，MSVC 工具集名是 **v145**（14.51/14.52），不是 v143。Qt 5.15.2 是 v142 编译的，v145 链接兼容（ABI 向后兼容）。
+- **工程结构**：`VideoClient.vcxproj`（Win32 + v145 + QtInstall 硬编码 msvc2019 + QtModules=core;gui;widgets）+ `main.cpp` + `VideoClientDlg.h/.cpp` + `VideoClientDlg.ui`（空 QMainWindow 画布，用 VS 里 Qt 设计器双击拖控件）+ `VideoClient.qrc`。已加入 `VideoPlay.slnx`。
+- **构建**：msbuild 命令行 `MSBuild VideoClient\VideoClient.vcxproj /p:Configuration=Debug /p:Platform=Win32` → exe 落 `VideoClient\Debug\`；Qt 运行库需 `D:\Qt\5.15.2\msvc2019\bin\windeployqt.exe --dir VideoClient\Debug VideoClient\Debug\VideoClient.exe` 部署（Debug 版 Qt5Cored/Guid/Widgetsd + platforms\qwindowsd 等）。
+- **关键坑（改这个工程必看）**：
+  1. vcxproj 的 `<Keyword>` **必须为 `QtVS_v301`**（Qt VS Tools 3.x 工程格式）；用旧的 `Qt4VSv1.0` 会让 qtvars.xml 不生成，报 `qt_vars.targets` 的 `MSB4044 ReadLinesFromFile File 为空`。
+  2. 源文件中文注释会 C4819：已加 `/utf-8` 编译选项，且 `.cpp/.h` 带 UTF-8 BOM。
+  3. **不要对仓库跑 `git clean` 删未跟踪文件**——会误删新建的 Qt 源码（本次两次发生，已恢复并提交保护）。
+  4. ⚠️ 仓库存在并行工作线（StarUML 设计图重构会话会对本仓库做 `git reset`/`git clean`），多次覆盖 slnx、删除未跟踪源码。**任何 git 写操作前先 `git status`/`reflog` 核验**；若 VideoClient 源码/提交再次丢失，从 reflog 的 `6bc5c2a`（工程）、`718aa9b`（slnx）、`4911c38`（AGENTS.md）恢复。
 
 ## 参考工程（只读，别改）
 
