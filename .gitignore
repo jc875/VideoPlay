@@ -43,3 +43,6 @@ Desktop.ini
 
 # 本地备份(编辑前快照,不进仓库)
 *.bak
+
+# StarUML 临时文件
+*.~ml
