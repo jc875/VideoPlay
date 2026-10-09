@@ -74,6 +74,10 @@ CMakeLists.txt.user*
 *.dll
 *.exe
 
+# VLC 运行库是源资产(非构建产物),必须入库保证工程自包含,特此豁免
+!libvlc.dll
+!libvlccore.dll
+
 # Directories with generated files
 .moc/
 .obj/
