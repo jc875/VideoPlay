@@ -48,6 +48,7 @@ else()
     else()
         add_executable(VideoClientQt
             ${PROJECT_SOURCES}
+            evla.h evla.cpp
         )
     endif()
 
