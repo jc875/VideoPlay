@@ -21,6 +21,7 @@ private slots:
     void on_playButton_clicked();
     void on_tick();
     void on_stopButton_clicked();
+    void on_openButton_clicked();
 
     void on_posSlider_sliderMoved(int position);
 

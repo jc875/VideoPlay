@@ -3,6 +3,8 @@
 #include"QTimer"
 #include "videoclientcontroller.h"
 #include"QDebug"
+#include <QFileDialog>   // 系统文件选择框
+#include <QDir>          // QDir::homePath():默认打开的目录
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -64,6 +66,22 @@ void MainWindow::on_tick()
             ui->timeLabel->setText(t);                        // "00:06 / 00:15"
         }
     }
+}
+
+
+void MainWindow::on_openButton_clicked()
+{
+    // QFileDialog::getOpenFileName:弹系统文件选择框,返回选中的完整路径
+    // 参数:(父窗口, 标题, 默认目录, 文件过滤规则)
+    QString filePath = QFileDialog::getOpenFileName(
+        this,                          // 父窗口:弹窗跟着主窗口
+        "选择视频文件",                 // 对话框标题
+        QDir::homePath(),              // 默认打开家目录(可改 D:/ 之类)
+        "视频文件 (*.mp4 *.avi *.mkv *.flv *.wmv);;所有文件 (*.*)"
+    );
+    if (filePath.isEmpty()) return;    // 用户点了"取消",返回空串,啥也别干
+    // Qt 返回的路径统一用正斜杠(D:/xx/xx.mp4),SetMedia 的 new_path 直接能播
+    ui->lineEdit->setText(filePath);
 }
 
 
