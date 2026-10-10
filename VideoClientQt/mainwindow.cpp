@@ -5,6 +5,13 @@
 #include"QDebug"
 #include <QFileDialog>   // 系统文件选择框
 #include <QDir>          // QDir::homePath():默认打开的目录
+#include <QFileInfo>     // QFileInfo::absolutePath():取默认视频所在目录
+
+// ========== 默认视频(真实存在,启动预填 + 打开文件对话框默认目录都用它) ==========
+// 为什么写死绝对路径:学习阶段图省事,双击播放按钮就能放;
+// 不足:项目换电脑/换目录后会失效,以后可改成相对路径(QCoreApplication::applicationDirPath())。
+static const QString kDefaultVideo = "D:/code/VideoPlay/VideoPlay/股市讨论.mp4";
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -15,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(timer,&QTimer::timeout,this,&MainWindow::on_tick);
      timer->start(200);
     ui->posSlider->setRange(0, 1000);
+    ui->lineEdit->setText(kDefaultVideo);   // 启动时预填默认 mp4:不用选文件,点播放就能放
     m_controller = new VideoClientController;   // 单向依赖:UI 持有 controller
     // 不再 SetView:controller 是纯逻辑层,不需要窗口指针(参考工程 Init 是 MFC 历史包袱)
 }
@@ -76,7 +84,7 @@ void MainWindow::on_openButton_clicked()
     QString filePath = QFileDialog::getOpenFileName(
         this,                          // 父窗口:弹窗跟着主窗口
         "选择视频文件",                 // 对话框标题
-        QDir::homePath(),              // 默认打开家目录(可改 D:/ 之类)
+        QFileInfo(kDefaultVideo).absolutePath(), // 默认目录:默认 mp4 所在文件夹(不是家目录了)
         "视频文件 (*.mp4 *.avi *.mkv *.flv *.wmv);;所有文件 (*.*)"
     );
     if (filePath.isEmpty()) return;    // 用户点了"取消",返回空串,啥也别干
