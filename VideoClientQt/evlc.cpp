@@ -49,7 +49,17 @@ int Evlc::SetMedia(std::string strUrl)
         libvlc_media_release(m_media);
         m_media = nullptr;
     }
-    m_media = libvlc_media_new_location(m_vlc, strUrl.c_str());
+    // 关键:URL 和本地路径要用不同的创建 API——
+    // 以 "协议://" 开头 → new_location(URL:http/rtsp/file:/// 等)
+    // 否则 → new_path(本地文件路径 D:/xx/xx.mp4),libvlc 内部自动转 file:///
+    bool isUrl = strUrl.rfind("file://", 0) == 0
+              || strUrl.rfind("http://", 0) == 0
+              || strUrl.rfind("https://", 0) == 0
+              || strUrl.rfind("rtsp://", 0) == 0;
+    if (isUrl)
+        m_media = libvlc_media_new_location(m_vlc, strUrl.c_str());
+    else
+        m_media = libvlc_media_new_path(m_vlc, strUrl.c_str());
     if (!m_media) {
         return -2;
     }
