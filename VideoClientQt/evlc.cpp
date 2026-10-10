@@ -49,17 +49,23 @@ int Evlc::SetMedia(std::string strUrl)
         libvlc_media_release(m_media);
         m_media = nullptr;
     }
-    // 关键:URL 和本地路径要用不同的创建 API——
-    // 以 "协议://" 开头 → new_location(URL:http/rtsp/file:/// 等)
-    // 否则 → new_path(本地文件路径 D:/xx/xx.mp4),libvlc 内部自动转 file:///
+    // 关键:本地路径和 URL 统一转成 file:/// 形式再 new_location——
+    // ⚠️ 为什么不用 libvlc_media_new_path:Windows 上遇到中文路径(UTF-8)
+    //    在非 UTF-8 系统区域下会解析失败返回 NULL(实测错误码 -2)。
+    //    file:/// 形式的 URL 是 libvlc 在 Windows 上最稳的本地文件表达(参考工程同款)。
     bool isUrl = strUrl.rfind("file://", 0) == 0
               || strUrl.rfind("http://", 0) == 0
               || strUrl.rfind("https://", 0) == 0
               || strUrl.rfind("rtsp://", 0) == 0;
-    if (isUrl)
+    if (isUrl) {
         m_media = libvlc_media_new_location(m_vlc, strUrl.c_str());
-    else
-        m_media = libvlc_media_new_path(m_vlc, strUrl.c_str());
+    } else {
+        // 本地路径:反斜杠转正斜杠(URL 里不认 \),再拼 file:/// 前缀
+        std::string path = strUrl;
+        for (auto& c : path) if (c == '\\') c = '/';
+        std::string fileUrl = "file:///" + path;
+        m_media = libvlc_media_new_location(m_vlc, fileUrl.c_str());
+    }
     if (!m_media) {
         return -2;
     }
