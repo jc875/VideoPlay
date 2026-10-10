@@ -29,6 +29,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     bool playing = false;
+public:
     VideoClientController* m_controller;   // 指向控制器
 };
 #endif // MAINWINDOW_H
