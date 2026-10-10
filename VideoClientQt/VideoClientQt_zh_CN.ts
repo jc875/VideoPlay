@@ -5,50 +5,57 @@
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="14"/>
-        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="101"/>
-        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="101"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="129"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="129"/>
         <source>MainWindow</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="53"/>
-        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="102"/>
-        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="102"/>
+        <location filename="mainwindow.ui" line="35"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="130"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="130"/>
+        <source>播放地址</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="45"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="131"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="131"/>
+        <source>打开文件</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="59"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="132"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="132"/>
         <source>播放</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="66"/>
-        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="103"/>
-        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="103"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="133"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="133"/>
         <source>停止</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="92"/>
-        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="104"/>
-        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="104"/>
-        <source>播放地址</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="115"/>
-        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="105"/>
-        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="105"/>
+        <location filename="mainwindow.ui" line="73"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="134"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="134"/>
         <source>音量</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="128"/>
-        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="106"/>
-        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="106"/>
+        <location filename="mainwindow.ui" line="80"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="135"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="135"/>
         <source>00:00 / 00:00</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="143"/>
-        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="107"/>
-        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="107"/>
+        <location filename="mainwindow.ui" line="97"/>
+        <location filename="build/Desktop_Qt_5_15_2_MSVC2019_32bit-Debug/VideoClientQt_autogen/include/ui_mainwindow.h" line="136"/>
+        <location filename="build/testcfg/VideoClientQt_autogen/include/ui_mainwindow.h" line="136"/>
         <source>视频播放器</source>
         <translation type="unfinished"></translation>
     </message>

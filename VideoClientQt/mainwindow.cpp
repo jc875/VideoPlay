@@ -94,12 +94,14 @@ void MainWindow::on_stopButton_clicked()
 
 void MainWindow::on_posSlider_sliderMoved(int position)
 {
-
+    qDebug() << "进度滑块:" << position;
+    m_controller->SetPosition(position / 1000.0f);   // 0~1000 → 0.0~1.0
 }
 
 
 void MainWindow::on_volumeSlider_valueChanged(int value)
 {
-
+    qDebug() << "音量滑块:" << value;      // 日志(见第③节)
+    m_controller->SetVolume(value);        // Qt 垂直滑块:底部=0、顶部=100,直接用!
 }
 
