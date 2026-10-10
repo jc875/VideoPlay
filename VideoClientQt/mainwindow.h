@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+class VideoClientController;   // 前置声明
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -29,5 +29,6 @@ private slots:
 private:
     Ui::MainWindow *ui;
     bool playing = false;
+    VideoClientController* m_controller;   // 指向控制器
 };
 #endif // MAINWINDOW_H

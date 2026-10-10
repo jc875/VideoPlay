@@ -48,7 +48,8 @@ else()
     else()
         add_executable(VideoClientQt
             ${PROJECT_SOURCES}
-            evla.h evla.cpp
+            evlc.h evlc.cpp
+            videoclientcontroller.h videoclientcontroller.cpp
         )
     endif()
 
