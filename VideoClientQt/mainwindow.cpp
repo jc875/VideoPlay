@@ -97,6 +97,7 @@ void MainWindow::on_stopButton_clicked()
 {
     playing=false;
     ui->playButton->setText("播放");
+    m_controller->VideoCtrl(EVLC_STOP);
 }
 
 

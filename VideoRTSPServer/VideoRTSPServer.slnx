@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="VideoRTSPServer/VideoRTSPServer.vcxproj" Id="2d58ff9e-e09a-43c6-84a8-59d6b693f6f5" />
+</Solution>
