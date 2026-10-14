@@ -1,6 +1,8 @@
 #pragma once
 #include<WinSock2.h>
+#pragma comment(lib, "ws2_32.lib")   // ⚠️ 补:Winsock API 导入库;vcxproj 没配 AdditionalDependencies,不链会 LNK2019
 #include <string>
+#include <memory>   // ⚠️ 补:ESocket 用了 std::shared_ptr,之前漏 include,在部分编译单元里会 C2065 m_socket 未声明
 
 class Buffer :public std::string
 {

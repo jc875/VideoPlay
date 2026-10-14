@@ -6,7 +6,7 @@
 #include <Windows.h>
 #include<varargs.h>
 
-void ETRACE(const char* format, ...) {
+inline void ETRACE(const char* format, ...) {   // ⚠️ 改 inline:头文件里定义的非内联函数被两个 TU 包含会 LNK2005 多重定义
 	// 仅在调试模式下输出调试信息
 	va_list ap;
 	va_start(ap, format);

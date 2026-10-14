@@ -1,5 +1,7 @@
 ﻿// VideoRTSPServer.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
+#define _WINSOCK_DEPRECATED_NO_WARNINGS   // 关闭 inet_addr 等旧 Winsock API 弃用告警(必须在 include winsock 前)
+#define _CRT_SECURE_NO_WARNINGS           // 关闭 sscanf 等旧 CRT 函数安全告警
 
 #include <iostream>
 
