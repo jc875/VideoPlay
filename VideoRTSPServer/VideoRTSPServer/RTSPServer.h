@@ -21,8 +21,19 @@ public:
 		return *this;
 	}
 	~RTSPRequest() {}
+	void SetMethod(const Buffer& method);
+	void SetURL(const Buffer& url);
+	void SetSeq(const Buffer& url);
+	void SetSession(const Buffer& url);
+	void SetClientRTPPort(int *port);
+
 private:
 	int m_method; // 0:OPTIONS 1:DESCRIBE 2:SETUP 3:PLAY 4:PAUSE 5:TEARDOWN
+	std::string m_url;
+	int m_seq;
+	int m_client_port[2];
+	std::string m_sessionID;
+	
 };
 
 class RTSPReply
@@ -45,6 +56,9 @@ public:
 	Buffer ToBuffer();
 private:
 	int m_method; // 0:OPTIONS 1:DESCRIBE 2:SETUP 3:PLAY 4:PAUSE 5:TEARDOWN
+	std::string m_sdp;
+	short m_serverRTPPort;
+	short m_clientRTPPort;
 };
 
 class RTSPSession
@@ -53,21 +67,26 @@ public:
 	RTSPSession() {}
 	RTSPSession(const RTSPSession& other) {
 		if (this != &other) {
-			m_request = other.m_request;
-			m_reply = other.m_reply;
+			
 		}
 	}
 	RTSPSession& operator=(const RTSPSession& other) {
 		if (this != &other) {
-			m_request = other.m_request;
-			m_reply = other.m_reply;
+			
 		}
 		return *this;
 	}
+	RTSPSession(ESocket clientSocket) : m_clientSocket(clientSocket) {}
 	~RTSPSession() {}
+	int PickSessionAndHandleRequest();
+	Buffer PickLine( Buffer& buffer);
+	Buffer Pick();
+	RTSPRequest ParseRequest(const Buffer& buffer);
+	RTSPReply HandleRequest(const RTSPRequest& request);
 private:
-	RTSPRequest m_request;
-	RTSPReply m_reply;
+	
+	std::string m_sessionID;
+	ESocket m_clientSocket;
 };
 
 
@@ -88,8 +107,7 @@ public:
 	
 protected:
 	int threadWorker();
-	RTSPRequest AnalyzeRequest(const std::string& request);
-	RTSPReply HandleRequest(const RTSPRequest& request);
+	
 	int ThreadSessionWorker();
 private:
 	ESocket m_listenSocket;
@@ -97,8 +115,7 @@ private:
 	int m_status; // 0:未启动 1:启动中 2:运行中 3:停止中
 	EdoyunThread m_threadMain;
 	EdoyunThreadPool m_threadPool;
-	std::map<std::string, RTSPSession> m_sessions;
 	static SocketIniter socketIniter;
-	CEdoyunQueue<ESocket> m_clients;
+	CEdoyunQueue<RTSPSession> m_lstSession;
 };
 

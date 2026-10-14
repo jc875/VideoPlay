@@ -22,11 +22,24 @@ public:
 		}
 	}
 	operator void* () { return (char*)c_str(); }
+	Buffer& operator=(const Buffer& other) {
+		if (this != &other) {
+			*(std::string*)this = other;
+		}
+		return *this;
+	}
 	operator char* () { return (char*)c_str(); }
 	operator unsigned char* () { return (unsigned char*)c_str(); }
 	operator char* () const { return (char*)c_str(); }
 	operator const char* () const { return c_str(); }
 	operator const void* () const { return c_str(); }
+	void Update(const char* str, size_t length) {
+		resize(length);
+		memcpy((char*)c_str(), str, length);
+	}
+	void Zero() {
+		memset((char*)c_str(), 0, size());
+	}
 };
 class Socket
 {

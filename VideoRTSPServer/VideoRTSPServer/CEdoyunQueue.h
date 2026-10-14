@@ -91,6 +91,7 @@ public:
 		if (ret) {
 			data = Param.Data;
 		}
+		if (hEvent)CloseHandle(hEvent);
 		return ret;
 	}
 
