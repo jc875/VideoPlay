@@ -139,14 +139,17 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MideaFile.cpp" />
     <ClCompile Include="RTSPServer.cpp" />
     <ClCompile Include="VideoRTSPServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CEdoyunQueue.h" />
     <ClInclude Include="EdoyunThread.h" />
+    <ClInclude Include="MideaFile.h" />
     <ClInclude Include="RTSPServer.h" />
     <ClInclude Include="Socket.h" />
+    <ClInclude Include="base.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
