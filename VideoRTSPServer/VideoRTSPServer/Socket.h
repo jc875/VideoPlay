@@ -56,6 +56,12 @@ public:
 			m_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 		}
 	}
+	// ⚠️ 补(参考版同款):包装一个已存在的 SOCKET 句柄(accept 返回的)。
+	//    没有它,ESocket(SOCKET,bool) 里 *m_socket = sock 会把句柄当"类型标志"走 Socket(int) 构造,
+	//    真实句柄(如 264)≠0/1 → m_socket 变 INVALID_SOCKET → Recv/Send 全失败、不回包。
+	Socket(SOCKET s) {
+		m_socket = s;
+	}
 	void Close() {
 		if (m_socket != INVALID_SOCKET) {
 			closesocket(m_socket);
@@ -117,6 +123,13 @@ public:
 		
 		return &m_addr;
 	}
+	// ⚠️ 以下两个 + size() 是对齐参考版补的:
+	//   - operator const sockaddr* () const:const EAddress 传给 bind/connect(第二参是 const sockaddr*)必需,原来没有导致 C2440
+	//   - operator sockaddr* ():accept 第二参是 sockaddr*(非 const),原来只有 sockaddr_in* 版本
+	//   - size():bind/connect 第三参长度(原来用 sizeof(addr)=整个对象大小,错;应为 sockaddr_in 大小)
+	operator const sockaddr* () const { return (sockaddr*)&m_addr; }
+	operator sockaddr* () { return (sockaddr*)&m_addr; }
+	int size() const { return sizeof(sockaddr_in); }
 
 private:
 	std::string m_strIP;
@@ -150,18 +163,22 @@ public:
 		if (m_socket == nullptr) {
 			m_socket.reset(new Socket(m_isTCP ? 0 : 1));
 			}
-		return bind(*m_socket, (sockaddr*)&addr, sizeof(addr));
+		// ⚠️ 修复:原来写 (sockaddr*)&addr 传 EAddress 对象地址(开头是 std::string),
+		//    bind 读到 sin_family 是 string 的字节 → WSAEAFNOSUPPORT(10047) → 端口永远监听不上。
+		//    参考版写法:addr 隐式转 const sockaddr*(指向 &m_addr),长度用 addr.size()。
+		return bind(*m_socket, addr, addr.size());
 	}
 	int Listen(int nBacklog=5) {
 		return listen(*m_socket, nBacklog);
 	}
 	int Connect(const EAddress& addr) {
-		return connect(*m_socket, (sockaddr*)&addr, sizeof(addr));
+		// ⚠️ 同 Bind 修复:取 m_addr 地址,不是对象地址
+		return connect(*m_socket, addr, addr.size());
 	}
 	ESocket Accept(EAddress& addr) {
-		
-		int addrLen = sizeof(addr);
-		SOCKET s=  accept(*m_socket, (sockaddr*)&addr, &addrLen);
+		// ⚠️ 同 Bind 修复:accept 第二参必须是 sockaddr 地址(→&m_addr),第三参是它的长度
+		int addrLen = addr.size();
+		SOCKET s=  accept(*m_socket, addr, &addrLen);
 		return ESocket(s, m_isTCP);
 	}
 	void Close() {

@@ -212,14 +212,14 @@ RTSPRequest RTSPSession::ParseRequest(const Buffer& buffer)
 	Buffer data = buffer;
 	RTSPRequest request;
 	Buffer line = PickLine(data);
-	Buffer method(32), url(256), version(32), seq(32);
+	// ⚠️ 修复(2026-10-15):原来用 Buffer method(32) + sscanf 写 c_str() 内部缓冲,
+	//    string 的 size() 不会被 sscanf 更新 → method 保持 32 字节('\0' 填充尾巴),
+	//    SetMethod 里 method == "OPTIONS" 按 size 比较 32≠7 → 永远失败 → method=-1 不回包。
+	//    正式做法:sscanf 写本地 char 数组,再 Buffer(arr) 截断构造回 string。
+	char method[32] = { 0 }, url[256] = { 0 }, version[32] = { 0 }, seq[32] = { 0 };
 
 	// 请求行:"OPTIONS rtsp://... RTSP/1.0"
-	// ⚠️ 注意:Buffer 继承 std::string,operator char*() 返回 c_str() 指针,
-	//    sscanf 往里写是"教学写法"(参考版同款),严格说是未定义行为;正式代码应改用可写缓冲。
-	// ⚠️ 可变参数(va_args)不会对类做隐式转换:method/url/version 必须显式 (char*) 强转,
-	//    否则 sscanf 会把 Buffer 对象本身当缓冲区写(原代码漏了强转,是 UB)。
-	if (sscanf(line.c_str(), "%s %s %s", (char*)method, (char*)url, (char*)version) < 3) {
+	if (sscanf(line.c_str(), "%s %s %s", method, url, version) < 3) {
 		TRACE("ParseRequest: invalid request line: %s\n", line.c_str());
 		return request;   // m_method 保持 -1,上层识别为解析失败
 	}
@@ -227,14 +227,14 @@ RTSPRequest RTSPSession::ParseRequest(const Buffer& buffer)
 	// CSeq 行:协议头是 "CSeq:",不是 "Seq:"。
 	// ⚠️ 原代码写 "Seq: %s" 永远匹配失败(sscanf 从行首精确匹配,实际行以 'C' 开头),已修。
 	line = PickLine(data);
-	if (sscanf(line.c_str(), "CSeq: %s", (char*)seq) < 1) {
+	if (sscanf(line.c_str(), "CSeq: %s", seq) < 1) {
 		TRACE("ParseRequest: invalid CSeq line: %s\n", line.c_str());
 		return request;
 	}
 
-	request.SetMethod(method);
-	request.SetURL(url);
-	request.SetSeq(seq);    // 原实现为空!不存 CSeq,回复就没法回显
+	request.SetMethod(Buffer(method));   // Buffer(const char*) 截断到 '\0',干净字符串
+	request.SetURL(Buffer(url));
+	request.SetSeq(Buffer(seq));         // 原实现为空!不存 CSeq,回复就没法回显
 
 	if ((strcmp(method, "OPTIONS") == 0) || (strcmp(method, "DESCRIBE") == 0)) {
 		return request;     // 这两个方法到此为止
@@ -247,7 +247,7 @@ RTSPRequest RTSPSession::ParseRequest(const Buffer& buffer)
 			break;
 		} while (line.size() > 0);
 		int port[2] = { 0, 0 };
-		if (sscanf(line, "Transport: RTP/AVP;unicast;client_port=%d-%d\r\n", port, port + 1) == 2) {
+		if (sscanf(line.c_str(), "Transport: RTP/AVP;unicast;client_port=%d-%d\r\n", port, port + 1) == 2) {
 			request.SetClientRTPPort(port);
 			return request;
 		}
@@ -256,9 +256,9 @@ RTSPRequest RTSPSession::ParseRequest(const Buffer& buffer)
 		// 这三个方法都带 Session 头(断线重连也要靠它)
 		// ⚠️ 原代码只有 PLAY/TEARDOWN,漏了 PAUSE(枚举里明明有 4:PAUSE),已补
 		line = PickLine(data);
-		Buffer session(64);
-		if (sscanf(line, "Session: %s\r\n", (char*)session) == 1) {
-			request.SetSession(session);
+		char session[64] = { 0 };
+		if (sscanf(line.c_str(), "Session: %s\r\n", session) == 1) {
+			request.SetSession(Buffer(session));
 			return request;
 		}
 	}
