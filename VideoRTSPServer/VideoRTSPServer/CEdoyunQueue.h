@@ -76,7 +76,7 @@ public:
 	virtual bool PopFront(T& data) {
 		
 		HANDLE hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-		IocpParam Param(EQPop, data, hEvent);
+		IocpParam Param(EQPop, T(), hEvent);
 		if (m_lock) {
 			if (hEvent)CloseHandle(hEvent);
 			return false;

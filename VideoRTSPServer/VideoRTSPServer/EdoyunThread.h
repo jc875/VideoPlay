@@ -82,7 +82,7 @@ public:
 	}
 
 	bool Stop() {
-		if(m_bStatus = false) return true;
+		if(m_bStatus == false) return true;
 		m_bStatus = false;
 		DWORD ret = WaitForSingleObject(m_hThread, 1000);
 		if (ret == WAIT_TIMEOUT) {
