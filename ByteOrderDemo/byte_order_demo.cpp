@@ -38,6 +38,20 @@ void dump(const char* name, const void* p, size_t n)
 	printf("\n");
 }
 
+// 打印一段内存的二进制形式(每个字节 8 bit,左边 MSB 最高位 → 右边 LSB 最低位)
+// 用途:看清"位域把每个字段放在哪个 bit"(十六进制只能看字节,二进制能看 bit)
+void dump_bin(const char* name, const void* p, size_t n)
+{
+	const unsigned char* b = (const unsigned char*)p;
+	printf("%-16s ", name);
+	for (size_t i = 0; i < n; i++) {
+		for (int bit = 7; bit >= 0; bit--)
+			printf("%d", (b[i] >> bit) & 1);
+		printf(" ");
+	}
+	printf("\n");
+}
+
 int main()
 {
 	printf("===== 1. 本机字节序:小端还是大端? =====\n");
@@ -64,8 +78,11 @@ int main()
 	h.serial = 0x1234;
 	h.timestamp = 0x11223344;
 	h.ssrc = 0x55667788;
-	dump("原始内存", &h, 12);
-	printf("→ 前2字节 = 80 60:位域直接拼出 RTP 规范字节(V=2 高2位, PT=96),不用转换!\n");
+	dump("原始内存(hex)", &h, 12);
+	dump_bin("原始内存(bin)", &h, 12);
+	printf("→ 字节0 = 10000000:bit6-7=10(version=2),bit0-3=0000(csrccount=0)\n");
+	printf("→ 字节1 = 01100000:bit7=0(mark),bit0-6=1100000(pytype=96)\n");
+	printf("→ 位域拼出的前 2 字节 = RTP 规范字节(V=2 在最高2位, PT=96),不用转换!\n");
 	printf("→ 但 serial/timestamp/ssrc 还是小端(34 12 / 44 33 22 11 / 88 77 66 55)\n\n");
 
 	printf("===== 5. 模拟参考版 operator EBuffer:多字节字段转网络序后整体拷贝 =====\n");
@@ -73,7 +90,8 @@ int main()
 	net.serial = htons(net.serial);
 	net.timestamp = htonl(net.timestamp);
 	net.ssrc = htonl(net.ssrc);
-	dump("转网络序后", &net, 12);
+	dump("转网络序后(hex)", &net, 12);
+	dump_bin("转网络序后(bin)", &net, 12);
 	printf("→ 80 60 12 34 11 22 33 44 55 66 77 88 = 标准 RTP 头!sendto 直接发即可\n");
 	printf("→ 前 2 字节(位域)没动,后 6 字节(多字节数值)高低字节交换了\n\n");
 
