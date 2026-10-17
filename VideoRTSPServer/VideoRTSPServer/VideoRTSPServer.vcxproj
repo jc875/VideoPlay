@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MideaFile.cpp" />
+    <ClCompile Include="RTPHelper.cpp" />
     <ClCompile Include="RTSPServer.cpp" />
     <ClCompile Include="VideoRTSPServer.cpp" />
   </ItemGroup>
@@ -147,6 +148,7 @@
     <ClInclude Include="CEdoyunQueue.h" />
     <ClInclude Include="EdoyunThread.h" />
     <ClInclude Include="MideaFile.h" />
+    <ClInclude Include="RTPHelper.h" />
     <ClInclude Include="RTSPServer.h" />
     <ClInclude Include="Socket.h" />
     <ClInclude Include="base.h" />
