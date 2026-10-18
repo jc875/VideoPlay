@@ -13,7 +13,12 @@
 //   8. RTSPReply::ToBuffer 实现             —— 之前空实现,拼不出报文
 //   9. SetSeq 实现                          —— 之前空实现,回复没有 CSeq
 //   10. RTSPServer(int nPort) 补定义        —— 之前只声明没定义
-// 说明:数据面(H264 解析 + RTP 发送,参考的 MideaFile/RTPHelper/UdpWorker)本轮不做,留 TODO。
+// 数据面(本轮 2026-10-18 接通,对照参考版):
+//   11. RTSPPLAYCB 回调 + PlayCallBack     —— 会话层收到 PLAY 时把推流交回服务器层(参考版同款)
+//   12. GetClientUDPAddress 实现           —— TCP 对端 IP + SETUP 协商的客户端 RTP 端口(参考版用 getsockname,这里改 getpeername 更正确)
+//   13. UdpWorker 实现                     —— 循环 MideaFile 读帧 → RTPHelper 封包 → UDP 发送
+//   14. Socket.h 的 EAddress 补 operator=(short) —— GetClientUDPAddress 换端口用
+// 说明:UdpWorker 为参考版同款"同步推完整个文件"的教学简化,PAUSE/TEARDOWN 期间收不到(已注释标注)。
 
 #include "RTSPServer.h"
 #include <rpc.h>        // UuidCreate:生成唯一会话 ID
@@ -85,7 +90,8 @@ int RTSPServer::ThreadSessionWorker()
 {
 	RTSPSession session;
 	if (m_lstSession.PopFront(session)) {
-		return session.PickSessionAndHandleRequest();   // 阻塞处理完这条连接才返回
+		// 把 PlayCallBack 回调 + this 交给会话层:会话收到 PLAY 时通过回调把推流交回服务器
+		return session.PickSessionAndHandleRequest(RTSPServer::PlayCallBack, this);
 	}
 	return -1;
 }
@@ -137,7 +143,9 @@ RTSPSession& RTSPSession::operator=(const RTSPSession& other)
 // 会话主入口:循环【收请求 → 解析 → 构造回复 → 发回】,直到 send 失败或断连。
 // 参考版是 do-while:一个连接可以连续发 OPTIONS→DESCRIBE→SETUP→PLAY 一串请求。
 // SETUP 时顺手记下客户端 RTP 端口(m_port),PLAY 发数据要用。
-int RTSPSession::PickSessionAndHandleRequest()
+// ⚠️ 回调参数(RTSPPLAYCB cb, RTSPServer* thiz):会话层不知道"怎么推流",
+//    收到 PLAY 时调用 cb(thiz, *this) 把控制权交回服务器层(参考版同款设计)。
+int RTSPSession::PickSessionAndHandleRequest(RTSPPLAYCB cb, RTSPServer* thiz)
 {
 	int ret = -1;
 	do {
@@ -153,8 +161,46 @@ int RTSPSession::PickSessionAndHandleRequest()
 		if (request.method() == 2) {                  // SETUP 完成 → 记住客户端 RTP 端口(PLAY 发数据要用)
 			m_port = (short)request.clientPort(0);    // 客户端 RTP 端口对里的偶数端口
 		}
+		if (request.method() == 3) {                  // PLAY → 回调触发数据面推流(参考版同款,先回 200 OK 再推)
+			cb(thiz, *this);
+		}
 	} while (ret >= 0);                              // send 成功就继续等下一条请求
 	return ret;
+}
+
+// 推流目标地址:TCP 连接对端(客户端)的 IP + SETUP 协商的客户端 RTP 端口。
+// 参考版用 getsockname(拿到的是服务器本机 IP)——本地 127.0.0.1 测试结果一样,
+// 但客户端从别的机器连时推流会发错 IP;这里改用 getpeername 更正确(如实指出参考版不足)。
+EAddress RTSPSession::GetClientUDPAddress() const
+{
+	EAddress addr;                        // 默认构造:IP=INADDR_ANY,端口 0
+	int len = addr.size();                // 输出参数:getsockname 填完后回写实际长度
+	getpeername(m_clientSocket, addr, &len);   // m_clientSocket 可隐式转 SOCKET;addr 可隐式转 sockaddr*
+	addr = m_port;                        // 只换端口(operator=(short) 保留 IP),端口 = SETUP 协商值
+	return addr;
+}
+
+// ---- 数据面推流链:PlayCallBack → UdpWorker ----
+// 回调实现(static):会话层收到 PLAY 后调用这里,真正干活的还是服务器自己的 UdpWorker。
+void RTSPServer::PlayCallBack(RTSPServer* thiz, RTSPSession& session)
+{
+	thiz->UdpWorker(session.GetClientUDPAddress());
+}
+
+// 数据面主循环:一帧帧读 H264 → RTPHelper 封 RTP 包(FU-A 分片)→ UDP 发给客户端。
+// ⚠️ 参考版同款的教学简化:同步推完整个文件才返回(约 26 秒,30fps 节流),
+//    期间这条会话的工作线程被占住,PAUSE/TEARDOWN 收不到。正式产品应改独立推流线程 + 可中断。
+void RTSPServer::UdpWorker(const EAddress& client)
+{
+	Buffer frame = m_h264File.ReadOneFrame();
+	RTPFrame rtp;
+	while (frame.size() > 0) {
+		m_rtpHelper.SendMediaFrame(rtp, frame, client);   // 封包+发送(Sleep 节流在内部)
+		frame = m_h264File.ReadOneFrame();                // 取下一帧
+	}
+	TRACE("UdpWorker done, stream to %s:%d finished.\n",
+		inet_ntoa(((const sockaddr_in*)client)->sin_addr),
+		ntohs(((const sockaddr_in*)client)->sin_port));
 }
 
 // PickLine:从 buffer 里取出一行(到 '\n',含换行),剩余部分回填 buffer。
@@ -316,8 +362,8 @@ RTSPReply RTSPSession::HandleRequest(const RTSPRequest& request)
 	case 4: // PAUSE
 	case 5: // TEARDOWN
 		// 这三个只要 Session + 200 OK 就够。
-		// TODO(数据面,本轮不做):PLAY 还要触发 RTP 数据发送——
-		//   参考版 PlayCallBack → UdpWorker → MideaFile 读 H264 帧 → RTPHelper 打包 → UDP 发给客户端
+		// 数据面(已接通 2026-10-18):PLAY 的 200 OK 发出后,由 PickSessionAndHandleRequest
+		//   调 RTSPPLAYCB 回调 → PlayCallBack → UdpWorker 触发推流(见本文件数据面实现)。
 		break;
 	default:
 		TRACE("HandleRequest: unknown method %d\r\n", request.method());

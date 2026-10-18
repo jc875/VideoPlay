@@ -85,6 +85,9 @@ public:
 		
 		return &m_addr;
 	}
+	// ⚠️ 补 const 版:const EAddress(UdpWorker 的 const EAddress& client 参数)要能转成
+	//    const sockaddr_in* 打印目标 IP/端口,没有它报 C2440(用户定义转换不可用)。
+	operator const sockaddr_in* () const { return &m_addr; }
 	// ⚠️ 以下两个 + size() 是对齐参考版补的:
 	//   - operator const sockaddr* () const:const EAddress 传给 bind/connect(第二参是 const sockaddr*)必需,原来没有导致 C2440
 	//   - operator sockaddr* ():accept 第二参是 sockaddr*(非 const),原来只有 sockaddr_in* 版本
@@ -92,6 +95,14 @@ public:
 	operator const sockaddr* () const { return (sockaddr*)&m_addr; }
 	operator sockaddr* () { return (sockaddr*)&m_addr; }
 	int size() const { return sizeof(sockaddr_in); }
+	// ⚠️ 补(参考版同款):只改端口、保留 IP —— RTSPSession::GetClientUDPAddress 里
+	//    "对端 IP + SETUP 协商的 RTP 端口" 要靠它:先 getpeername 拿到客户端 IP,
+	//    再 addr = m_port 只换端口,IP 不动。没有它编译不过(short → EAddress 无匹配重载)。
+	EAddress& operator=(short port) {
+		m_nPort = port;
+		m_addr.sin_port = htons(port);   // 主机序 → 网络序(发送地址必须网络序)
+		return *this;
+	}
 
 private:
 	std::string m_strIP;
@@ -121,6 +132,9 @@ public:
 	} // 赋值:只是把计数器 +1,不复制句柄)
 	~ESocket() { m_socket.reset(); }               // 析构:计数器 -1,count 没到 0 就绝不关闭
 	operator SOCKET() { return *m_socket; }  // 让 ESocket 可以直接当 SOCKET 使用
+	// ⚠️ 补 const 版:const ESocket(如 RTSPSession::GetClientUDPAddress 的 const 成员函数里)也要能当 SOCKET 用。
+	//    没有它,const 对象调 operator SOCKET() 报 C2664(用户定义转换不可用)。
+	operator SOCKET() const { return *m_socket; }
 	int Bind(const EAddress& addr) {
 		if (m_socket == nullptr) {
 			m_socket.reset(new Socket(m_isTCP ? 0 : 1));

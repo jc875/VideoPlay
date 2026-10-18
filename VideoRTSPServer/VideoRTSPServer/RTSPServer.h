@@ -5,6 +5,15 @@
 #include <map>
 #include "CEdoyunQueue.h"
 #include"RTPHelper.h"
+#include"MideaFile.h"   // ⚠️ 数据面取帧器:PLAY 后 UdpWorker 从这里逐帧读 H264
+
+// ==================== RTSP 推流回调 ====================
+// 会话层(RTSPSession)只懂协议、不懂业务:收到 PLAY 后"怎么推流"要交回服务器层决定。
+// C 风格函数指针 + thiz 对象指针(普通函数指针不能指向成员函数,static 成员函数才匹配,
+// 再靠 thiz 参数手动"补回"this——参考版同款设计,解耦会话层与推流业务)。
+class RTSPSession;
+class RTSPServer;
+typedef void (*RTSPPLAYCB)(RTSPServer* thiz, RTSPSession& session);
 // ==================== RTSPRequest:一次客户端请求的结构化表示 ====================
 // 作用:把收到的原始 RTSP 报文解析成"方法 + URL + CSeq + Session + 客户端 RTP 端口",
 //      供 HandleRequest 按方法构造回复。
@@ -84,11 +93,13 @@ public:
 	RTSPSession& operator=(const RTSPSession& other);
 	~RTSPSession() {}
 
-	int PickSessionAndHandleRequest();     // 会话主入口:循环收/解析/回复,直到断连
+	int PickSessionAndHandleRequest(RTSPPLAYCB cb, RTSPServer* thiz);  // 会话主入口:循环收/解析/回复,直到断连
+	// ⚠️ 回调参数:PLAY 请求到达时,会话层调用 cb(thiz, *this) 把推流交回服务器层(参考版同款)。
 	Buffer PickLine(Buffer& buffer);       // 从 buffer 取出一行(到 '\n'),剩余回填(原空实现)
 	Buffer Pick();                         // 收一个完整请求(直到末尾 \r\n\r\n)
 	RTSPRequest ParseRequest(const Buffer& buffer);  // 解析请求行 + CSeq + 各方法特有头
 	RTSPReply HandleRequest(const RTSPRequest& request);  // 按方法构造回复(原空实现)
+	EAddress GetClientUDPAddress() const;  // 推流目标地址 = TCP 对端 IP + SETUP 协商的客户端 RTP 端口
 
 private:
 	std::string m_sessionID;  // 本会话唯一 ID,回给客户端的 Session 头
@@ -106,6 +117,10 @@ public:
 	RTSPServer() : m_listenSocket(0), m_address(), m_status(0), m_threadPool(10) {
 		// 主线程的任务单:accept 循环
 		m_threadMain.UpdateWorker(::ThreadWorker(this, (FUNCTYPE)&RTSPServer::threadWorker));
+		// 数据面取帧器:打开 H264 裸流(参考版同款,相对路径=exe 工作目录)。
+		// ⚠️ 失败不致命:Open 失败后 ReadOneFrame 返回空,UdpWorker 自然不发,只留 TRACE 便于诊断。
+		int nRet = m_h264File.Open("./test.h264");
+		TRACE("MideaFile Open('./test.h264') = %d\n", nRet);
 	}
 	RTSPServer(int nPort);   // 指定端口构造(补实现,之前只声明没定义,会被链接器报错)
 	int Init(const std::string& strIP = "0.0.0.0", short nPort = 554);
@@ -116,6 +131,8 @@ public:
 protected:
 	int threadWorker();          // 主线程循环体:accept → RTSPSession → 入队 → 派工
 	int ThreadSessionWorker();   // 工作线程任务:PopFront 取会话 → 处理请求
+	static void PlayCallBack(RTSPServer* thiz, RTSPSession& session);  // 会话层 PLAY 时回调(static 才能塞进函数指针)
+	void UdpWorker(const EAddress& client);  // 数据面推流:循环 读帧→封 RTP→发 UDP
 
 private:
 	ESocket m_listenSocket;
@@ -126,4 +143,5 @@ private:
 	static SocketIniter socketIniter;          // 静态成员:程序启动自动 WSAStartup(定义在 .cpp)
 	CEdoyunQueue<RTSPSession> m_lstSession;    // 会话队列(IOCP 串行化,线程安全)
 	RTPHelper m_rtpHelper;                      // RTP 助手(封装和发送 RTP 包)
+	MideaFile m_h264File;                       // H264 裸流取帧器(数据面源)
 };
