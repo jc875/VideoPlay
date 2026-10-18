@@ -91,8 +91,10 @@ int RTPHelper::SendMediaFrame(RTPFrame& rtpframe, Buffer& frame, const EAddress&
 			((uint8_t*)rtpframe.m_pyload)[1] = nalu;
 			if (i == 0)
 				((uint8_t*)rtpframe.m_pyload)[1] |= 0x80;          // S=1
-			else if ((restsize == 0) && (i == count - 1))
+			else if ((restsize == 0) && (i == count - 1)) {
 				((uint8_t*)rtpframe.m_pyload)[1] |= 0x40;          // E=1(整除时最后一片在这)
+				rtpframe.m_head.marker = 1;                        // ★ 帧最后一片:marker=1(参考版漏设,libvlc 靠它判断帧结束/触发解码)
+			}
 			// 分片数据从 NALU 头之后开始(NALU 头信息已拆进 FU 两字节)
 			memcpy(2 + (uint8_t*)rtpframe.m_pyload, pFrame + RTP_MAX_SIZE * i + 1, RTP_MAX_SIZE);
 			SendFrame(rtpframe, client);
@@ -103,6 +105,7 @@ int RTPHelper::SendMediaFrame(RTPFrame& rtpframe, Buffer& frame, const EAddress&
 			rtpframe.m_pyload.resize(restsize + 2);
 			((uint8_t*)rtpframe.m_pyload)[0] = (pFrame[0] & 0x60) | 28;
 			((uint8_t*)rtpframe.m_pyload)[1] = 0x40 | nalu;        // E=1
+			rtpframe.m_head.marker = 1;                            // ★ 尾片:帧结束
 			memcpy(2 + (uint8_t*)rtpframe.m_pyload, pFrame + RTP_MAX_SIZE * count + 1, restsize);
 			SendFrame(rtpframe, client);
 			rtpframe.m_head.sequenceNumber++;
@@ -112,6 +115,7 @@ int RTPHelper::SendMediaFrame(RTPFrame& rtpframe, Buffer& frame, const EAddress&
 		// ═══ 小帧:完整 NALU(头+数据)直接放载荷,不加 FU 两字节 ═══
 		rtpframe.m_pyload.resize(frame.size() - sepsize);
 		memcpy(rtpframe.m_pyload, pFrame, frame.size() - sepsize);
+		rtpframe.m_head.marker = 1;    // ★ 单包即整帧:marker=1
 		SendFrame(rtpframe, client);
 		rtpframe.m_head.sequenceNumber++;
 	}
