@@ -4,7 +4,7 @@
 #include "EdoyunThread.h"
 #include <map>
 #include "CEdoyunQueue.h"
-
+#include"RTPHelper.h"
 // ==================== RTSPRequest:一次客户端请求的结构化表示 ====================
 // 作用:把收到的原始 RTSP 报文解析成"方法 + URL + CSeq + Session + 客户端 RTP 端口",
 //      供 HandleRequest 按方法构造回复。
@@ -125,4 +125,5 @@ private:
 	EdoyunThreadPool m_threadPool;             // 处理会话的工作线程池(10 个)
 	static SocketIniter socketIniter;          // 静态成员:程序启动自动 WSAStartup(定义在 .cpp)
 	CEdoyunQueue<RTSPSession> m_lstSession;    // 会话队列(IOCP 串行化,线程安全)
+	RTPHelper m_rtpHelper;                      // RTP 助手(封装和发送 RTP 包)
 };
